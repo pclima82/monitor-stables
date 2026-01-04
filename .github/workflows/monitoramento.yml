@@ -1,0 +1,35 @@
+name: Monitor Stables 24/7
+
+on:
+  schedule:
+    - cron: '*/15 * * * *'  # Roda a cada 15 minutos
+  workflow_dispatch:        # Permite rodar manualmente clicando num botão
+
+permissions:
+  contents: write
+
+jobs:
+  run-monitor:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Baixar código
+        uses: actions/checkout@v3
+
+      - name: Instalar Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.9'
+
+      - name: Instalar bibliotecas
+        run: pip install requests pandas
+
+      - name: Rodar Monitor
+        run: python monitor.py
+
+      - name: Salvar CSV (Commit)
+        run: |
+          git config --global user.name "Bot Monitor"
+          git config --global user.email "bot@github.com"
+          git add oportunidades.csv || echo "Nada para adicionar"
+          git commit -m "Log atualizado: $(date)" || echo "Sem mudanças"
+          git push
